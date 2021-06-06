@@ -59,6 +59,7 @@ npm에서 번들라 소프트웨어가 등장하게 되었다.
 번들러의 종류 : WebPack
 
 [https://webpack.js.org](https://webpack.js.org/) 참고
+<img width="976" alt="image" src="../Images/bundle.png">
 
 javascript 이외의 모든 파일을 하나로 묶어준다.
 
