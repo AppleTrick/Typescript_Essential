@@ -31,6 +31,8 @@ if 파일이 100개 ~ 수십만개 있다. script를 수십만개를 불러서 �
 당시 ES2015 를 지원하는 브라우저는 적었고 , 시간이 지난 현재에도 지원하지 않는 브라우저도 있다.
 
 [https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Modules](https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Modules) 참고
+<img width="976" alt="image" src="https://user-images.githubusercontent.com/31761527/120920856-de15e580-c6fb-11eb-9e4e-71f3e6875562.png">
+
 
 ## 다양한 문법의 존재
 
