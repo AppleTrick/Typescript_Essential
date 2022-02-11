@@ -36,17 +36,18 @@ window.addEventListener('hashchange',function(){
 });
 
 for (let i = 0; i < 10; i++) {
-    const li = document.createElement('li');
-    const a = document.createElement('a');
+    const div = document.createElement('div');
 
-    a.href = `#${newsFeed[i].id}`;
-    a.innerHTML = `${newsFeed[i].title} (${newsFeed[i].comments_count})`;
-
-    // 일반적인 이벤트를 생성하고 클릭시 작동 시키게 하는 법
-    // a.addEventListener('click',function() {});
-
-    ul.appendChild(li);
-    li.appendChild(a);
+    div.innerHTML =  `
+    <li>
+        <a href = "#${newsFeed[i].id}"> 
+            ${newsFeed[i].title} (${newsFeed[i].comments_count}) 
+        </a>
+    </li>
+    `;
+   
+    // ul.appendChild(div.children[0]);
+    ul.appendChild(div.firstElementChild);
 }
 
 container.appendChild(content);
