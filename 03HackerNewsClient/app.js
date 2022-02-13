@@ -52,8 +52,21 @@ function newsDetail(){
     `;
 }
 
-// 주소가 변경될때 작동하는 이벤트
-window.addEventListener('hashchange', newsDetail);
+function router(){
+    // 화면전환 => 해쉬에 따른 화면전환이 이뤄져야된다.
+    const routePath = location.hash;
 
+    if(routePath == ''){
+        // location.hash 에 # 만 들어갔을 경우 빈 문자열을 반환 한다.
+        newsFeed();
+    }else{
+        newsDetail();
+    }
+}
+
+// 주소가 변경될때 작동하는 이벤트
+window.addEventListener('hashchange', router);
+
+router();
 
 
