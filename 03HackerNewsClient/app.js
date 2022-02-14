@@ -25,10 +25,22 @@ function newsFeed(){
     const newsFeed = getData(NEWS_URL);
     const newsList = [];
 
+    // 마킹해주기
+    let template = `
+        <div>
+            <h1>Hacker News</h1>
+            <ul>
+                {{__news_feed__}}
+            </ul>
+            <div>
+                <a href="#/page/{{__preview_page__}}">이전으로</a> 
+                <a href="#/page/{{__next_page__}}">다음으로</a> 
+            </div>
+        </div>
+    `
 
-    newsList.push('<ul>');
+
     for (let i = (store.currentPage - 1) * 10 ; i < store.currentPage * 10; i++) {
-
         if (newsFeed[i]) {
             newsList.push(`
                 <li>
@@ -40,21 +52,16 @@ function newsFeed(){
         }else{
            break;
         }
-        
     }
-    newsList.push('</ul>');
 
-    //네비게이션 UI
-    newsList.push(`
-        <div>
-            <a href="#/page/${store.currentPage > 1 ? store.currentPage - 1 : 1}">이전 페이지 </a>
-            <a href="#/page/${newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage}">다음 페이지 </a>
-        </div>
-    `)
+    // 템플릿으로 교체
+    template = template.replace("{{__news_feed__}}", newsList.join(''));
+    template = template.replace("{{__preview_page__}}", store.currentPage > 1 ? store.currentPage - 1 : 1);
+    template = template.replace("{{__next_page__}}", newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage);
 
-    container.innerHTML = newsList.join('');
-
+    container.innerHTML = template
 }
+
 function newsDetail(){
 
     // 주소에 관련된 내용 가지고 오는법
