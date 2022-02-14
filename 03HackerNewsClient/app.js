@@ -26,8 +26,9 @@ function newsFeed(){
     const newsList = [];
 
     // 마킹해주기
+    // m => margin x => 가로값 p=> padding
     let template = `
-        <div>
+        <div class="container mx-auto p-4">
             <h1>Hacker News</h1>
             <ul>
                 {{__news_feed__}}
