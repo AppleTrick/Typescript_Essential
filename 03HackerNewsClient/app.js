@@ -1,12 +1,16 @@
+// root
 const container = document.getElementById('root');
-
+// ajax 통신 사용
 const ajax = new XMLHttpRequest();
-
 // 뉴스들에 대한 정보 가지고 오는 url
 const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json'
-
 // content 정보 가지고 오는 url
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
+// 공유되는 자원
+const store = {
+    currentPage : 1,
+};
+
 
 //ajax 데이터 통신함수
 function getData(url){
@@ -18,22 +22,35 @@ function getData(url){
 
 // 뉴스피드 목록 구성하하는 함수
 function newsFeed(){
-
     const newsFeed = getData(NEWS_URL);
-
     const newsList = [];
 
+
     newsList.push('<ul>');
-    for (let i = 0; i < 10; i++) {
-        newsList.push(`
-        <li>
-            <a href = "#${newsFeed[i].id}"> 
-                ${newsFeed[i].title} (${newsFeed[i].comments_count}) 
-            </a>
-        </li>
-        `);
+    for (let i = (store.currentPage - 1) * 10 ; i < store.currentPage * 10; i++) {
+
+        if (newsFeed[i]) {
+            newsList.push(`
+                <li>
+                    <a href = "#/show/${newsFeed[i].id}"> 
+                        ${newsFeed[i].title} (${newsFeed[i].comments_count}) 
+                    </a>
+                </li>
+            `);
+        }else{
+           break;
+        }
+        
     }
     newsList.push('</ul>');
+
+    //네비게이션 UI
+    newsList.push(`
+        <div>
+            <a href="#/page/${store.currentPage > 1 ? store.currentPage - 1 : 1}">이전 페이지 </a>
+            <a href="#/page/${newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage}">다음 페이지 </a>
+        </div>
+    `)
 
     container.innerHTML = newsList.join('');
 
@@ -41,13 +58,13 @@ function newsFeed(){
 function newsDetail(){
 
     // 주소에 관련된 내용 가지고 오는법
-    const id = location.hash.substring(1); // id 값을 가지고 옴
+    const id = location.hash.substring(7); // id 값을 가지고 옴
     const newsContent = getData(CONTENT_URL.replace('@id',id))
 
     container.innerHTML = `
         <h1>${newsContent.title}</h1>
         <div>
-            <a href="#">목록으로</a>
+            <a href="#/page/${store.currentPage}">목록으로</a>
         </div>
     `;
 }
@@ -58,6 +75,9 @@ function router(){
 
     if(routePath == ''){
         // location.hash 에 # 만 들어갔을 경우 빈 문자열을 반환 한다.
+        newsFeed();
+    }else if(routePath.indexOf('#/page/') >= 0 ){
+        store.currentPage = Number(routePath.substring(7));
         newsFeed();
     }else{
         newsDetail();
