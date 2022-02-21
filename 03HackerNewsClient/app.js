@@ -9,6 +9,7 @@ const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 // 공유되는 자원
 const store = {
     currentPage : 1,
+    feeds : [],
 };
 
 
@@ -20,11 +21,24 @@ function getData(url){
     return JSON.parse(ajax.response); // json으로 받아온것을 객체로 변환;
 }
 
+// 피드를 읽었는지 안읽었는지 체크하는 함수
+function makeFeeds(feeds){
+    for (let i = 0; i < feeds.length; i++) {
+        feeds[i].read = false;
+    }
+
+    return feeds;
+}
+
 // 뉴스피드 목록 구성하하는 함수
 function newsFeed(){
-    const newsFeed = getData(NEWS_URL);
+    // const newsFeed = getData(NEWS_URL);
+    let newsFeed = store.feeds;
     const newsList = [];
 
+    if (newsFeed.length == 0) {
+        newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
+    }
     // 마킹해주기
     // m => margin x => 가로값 p=> padding
     let template = `
@@ -121,7 +135,14 @@ function newsDetail(){
 
             </div>
         </div>
-    `
+    `;
+
+    for (let i = 0; i < store.feeds.length; i++) {
+        if(store.feeds[i].id = Number(id)){
+            store.feeds[i].read = true;
+            break;
+        }
+    }
     // comment 창 만드는 구조
     function makeComment(comments , called = 0) {
         // 배열구조로 생성
