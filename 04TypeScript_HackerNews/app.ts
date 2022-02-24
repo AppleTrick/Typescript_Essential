@@ -1,22 +1,53 @@
+type Store = {
+    currentPage : number;
+    feeds : NewsFeed[];
+}
+
+type News = {
+    id : number;
+    time_ago : string;
+    user : string;
+    title : string;
+    url : string;
+    content : string;
+}
+
+type NewsFeed = News & {
+    comment_count : number;
+    points : number;
+    read ?: boolean;
+}
+
+type NewsDetail = News & {
+    comments : NewsComment[];
+}
+
+type NewsComment = News & {
+    comments : NewsComment[];
+    level : number;
+}
+
 // root
-const container = document.getElementById('root');
+const container : HTMLElement | null = document.getElementById('root');
 // ajax 통신 사용
-const ajax = new XMLHttpRequest();
+const ajax : XMLHttpRequest = new XMLHttpRequest();
 // 뉴스들에 대한 정보 가지고 오는 url
 const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json'
 // content 정보 가지고 오는 url
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 // 공유되는 자원
-const store = {
+const store : Store = {
     currentPage : 1,
     feeds : [],
 };
 
 
 //ajax 데이터 통신함수
-function getData(url){
+function getData(url : string) : NewsFeed[] | NewsDetail[]{
     ajax.open('GET',url,false);  // false => 동기로 처리
     ajax.send();
+
+    // GetData 를 두가지 형태로 정의할 수 있지만, 사용하는 측에서는 그 데이터가 어떤 데이터인지 명확히 할 필요가 있다.
 
     return JSON.parse(ajax.response); // json으로 받아온것을 객체로 변환;
 }
@@ -30,15 +61,24 @@ function makeFeeds(feeds){
     return feeds;
 }
 
+function updateView(html){
+    if(container != null){
+        container.innerHTML = html;
+    }else{
+        console.log("컨테이너의 최상위 root가 없어서 진행하지 못합니다.");
+        
+    }
+}
+
 // 뉴스피드 목록 구성하하는 함수
 function newsFeed(){
-    // const newsFeed = getData(NEWS_URL);
-    let newsFeed = store.feeds;
+    let newsFeed : NewsFeed[] = store.feeds;
     const newsList = [];
 
     if (newsFeed.length == 0) {
         newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
     }
+    
     // 마킹해주기
     // m => margin x => 가로값 p=> padding
     let template = `
@@ -99,7 +139,8 @@ function newsFeed(){
     template = template.replace("{{__preview_page__}}", store.currentPage > 1 ? store.currentPage - 1 : 1);
     template = template.replace("{{__next_page__}}", newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage);
 
-    container.innerHTML = template
+    updateView(template);
+    
 }
 
 function newsDetail(){
@@ -168,7 +209,8 @@ function newsDetail(){
 
     }
 
-    container.innerHTML = template.replace('{{__comments__}}',makeComment(newsContent.comments));
+    updateView(template.replace('{{__comments__}}',makeComment(newsContent.comments)));
+    
 }
 
 function router(){
