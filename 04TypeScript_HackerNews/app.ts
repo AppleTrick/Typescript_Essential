@@ -1,30 +1,30 @@
-type Store = {
+interface Store {
     currentPage : number;
     feeds : NewsFeed[];
 }
 
-type News = {
-    id : number;
-    time_ago : string;
-    user : string;
-    title : string;
-    url : string;
-    content : string;
+interface News {
+    readonly id : number;
+    readonly time_ago : string;
+    readonly user : string;
+    readonly title : string;
+    readonly url : string;
+    readonly content : string;
 }
 
-type NewsFeed = News & {
-    comments_count : number;
-    points : number;
+interface NewsFeed extends News {
+    readonly comments_count : number;
+    readonly points : number;
     read ?: boolean;
 }
 
-type NewsDetail = News & {
-    comments : NewsComment[];
+interface NewsDetail extends News {
+    readonly comments : NewsComment[];
 }
 
-type NewsComment = News & {
-    comments : NewsComment[];
-    level : number;
+interface NewsComment extends News {
+    readonly comments : NewsComment[];
+    readonly level : number;
 }
 
 // root
@@ -179,7 +179,7 @@ function newsDetail() : void {
     `;
 
     for (let i = 0; i < store.feeds.length; i++) {
-        if(store.feeds[i].id = Number(id)){
+        if(store.feeds[i].id == Number(id)){
             store.feeds[i].read = true;
             break;
         }
