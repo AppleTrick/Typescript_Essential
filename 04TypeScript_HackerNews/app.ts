@@ -41,15 +41,35 @@ const store : Store = {
     feeds : [],
 };
 
+class Api{
+    url : string;
+    ajax : XMLHttpRequest;
 
-//ajax 데이터 통신함수
-function getData<T>(url : string) : T{
-    ajax.open('GET',url,false);  // false => 동기로 처리
-    ajax.send();
+    // 최초 생성될 때 처리를 하는 곳
+    constructor(url : string){
+        this.url = url;
+        this.ajax = new XMLHttpRequest();
+    }
 
-    // GetData 를 두가지 형태로 정의할 수 있지만, 사용하는 측에서는 그 데이터가 어떤 데이터인지 명확히 할 필요가 있다.
+    protected getRequest<AjaxResponse>() : AjaxResponse {
+        this.ajax.open('GET',this.url,false);
+        this.ajax.send();
 
-    return JSON.parse(ajax.response); // json으로 받아온것을 객체로 변환;
+        return JSON.parse(this.ajax.response);
+    }
+
+}
+
+class NewsFeedApi extends Api {
+    getData() : NewsFeed[] {
+        return this.getRequest<NewsFeed[]>();
+    }
+}
+
+class NewsDetailApi extends Api {
+    getData() : NewsDetail {
+        return this.getRequest<NewsDetail>();
+    }
 }
 
 // 피드를 읽었는지 안읽었는지 체크하는 함수
@@ -72,11 +92,13 @@ function updateView(html : string) : void{
 
 // 뉴스피드 목록 구성하하는 함수
 function newsFeed() : void {
+    const api = new NewsFeedApi(NEWS_URL);
+
     let newsFeed : NewsFeed[] = store.feeds;
     const newsList = [];
 
     if (newsFeed.length == 0) {
-        newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_URL));
+        newsFeed = store.feeds = makeFeeds(api.getData());
     }
     
     // 마킹해주기
@@ -144,10 +166,12 @@ function newsFeed() : void {
 }
 
 function newsDetail() : void {
+    
 
     // 주소에 관련된 내용 가지고 오는법
     const id = location.hash.substring(7); // id 값을 가지고 옴
-    const newsContent = getData<NewsDetail>(CONTENT_URL.replace('@id',id))
+    const api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
+    const newsContent = api.getData();
 
     let template = `
         <div class="bg-gray-600 min-h-screen pb-8">
