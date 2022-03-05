@@ -41,6 +41,7 @@ const store : Store = {
     feeds : [],
 };
 
+// 믹스인 코드
 function applyApiMixins(targetClass: any , baseClasses : any[] ) : void{
     baseClasses.forEach(baseClass => {
         Object.getOwnPropertyNames(baseClass.protoype).forEach(name => {
@@ -82,16 +83,96 @@ interface NewsDetailApi extends Api {};
 applyApiMixins(NewsFeedApi, [Api]);
 applyApiMixins(NewsDetailApi, [Api]);
 
+// 클래스의 이름 시작은 대문자로 쓸것!
+class NewsFeedView {
+    constructor(){
+        const api = new NewsFeedApi();
 
-
-// 피드를 읽었는지 안읽었는지 체크하는 함수
-function makeFeeds(feeds : NewsFeed[]) : NewsFeed[]{
-    for (let i = 0; i < feeds.length; i++) {
-        feeds[i].read = false;
+        let newsFeed : NewsFeed[] = store.feeds;
+    
+        if (newsFeed.length == 0) {
+            newsFeed = store.feeds = makeFeeds(api.getData());
+        }
+        
+        // 마킹해주기
+        // m => margin x => 가로값 p=> padding
+        let template = `
+        <div class="bg-gray-600 min-h-screen">
+            <div class="bg-white text-xl">
+                <div class="mx-auto px-4">
+                    <div class="flex justify-between items-center py-6">
+                        <div class="flex justify-start">
+                            <h1 class="font-extrabold">Hacker News</h1>
+                        </div>
+                        <div class="items-center justify-end">
+                            <a href="#/page/{{__prev_page__}}" class="text-gray-500">
+                            Previous
+                            </a>
+                            <a href="#/page/{{__next_page__}}" class="text-gray-500 ml-4">
+                            Next
+                            </a>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+            <div class="p-4 text-2xl text-gray-700">
+                {{__news_feed__}}        
+            </div>
+        </div>
+        `
     }
 
-    return feeds;
+    render() : void{
+        const newsList = [];
+
+        for (let i = (store.currentPage - 1) * 10 ; i < store.currentPage * 10; i++) {
+            // 안에서 fas fa-user의 부분은 font awesome의 부분이다.
+            if (newsFeed[i]) {
+                newsList.push(`
+                    <div class="p-6 ${newsFeed[i].read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
+                        <div class="flex">
+                            <div class="flex-auto">
+                                <a href="#/show/${newsFeed[i].id}">${newsFeed[i].title}</a>  
+                            </div>
+                            <div class="text-center text-sm">
+                                <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${newsFeed[i].comments_count}</div>
+                            </div>
+                            </div>
+                            <div class="flex mt-3">
+                            <div class="grid grid-cols-3 text-sm text-gray-500">
+                                <div><i class="fas fa-user mr-1"></i>${newsFeed[i].user}</div>
+                                <div><i class="fas fa-heart mr-1"></i>${newsFeed[i].points}</div>
+                                <div><i class="far fa-clock mr-1"></i>${newsFeed[i].time_ago}</div>
+                            </div>  
+                        </div>
+                    </div>    
+                    `);
+            }else{
+               break;
+            }
+        }
+    
+        // 템플릿으로 교체
+        template = template.replace("{{__news_feed__}}", newsList.join(''));
+        template = template.replace("{{__preview_page__}}", String(store.currentPage > 1 ? store.currentPage - 1 : 1));
+        template = template.replace("{{__next_page__}}", String(newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage));
+    
+        updateView(template);
+        
+    }
+
+    // 피드를 읽었는지 안읽었는지 체크하는 함수
+    makeFeeds(feeds : NewsFeed[]) : NewsFeed[]{
+        for (let i = 0; i < feeds.length; i++) {
+            feeds[i].read = false;
+        }
+
+        return feeds;
+    }
 }
+
+
+
 
 function updateView(html : string) : void{
     if(container != null){
@@ -100,81 +181,6 @@ function updateView(html : string) : void{
         console.log("컨테이너의 최상위 root가 없어서 진행하지 못합니다.");
         
     }
-}
-
-// 뉴스피드 목록 구성하하는 함수
-function newsFeed() : void {
-    const api = new NewsFeedApi();
-
-    let newsFeed : NewsFeed[] = store.feeds;
-    const newsList = [];
-
-    if (newsFeed.length == 0) {
-        newsFeed = store.feeds = makeFeeds(api.getData());
-    }
-    
-    // 마킹해주기
-    // m => margin x => 가로값 p=> padding
-    let template = `
-    <div class="bg-gray-600 min-h-screen">
-        <div class="bg-white text-xl">
-            <div class="mx-auto px-4">
-                <div class="flex justify-between items-center py-6">
-                    <div class="flex justify-start">
-                        <h1 class="font-extrabold">Hacker News</h1>
-                    </div>
-                    <div class="items-center justify-end">
-                        <a href="#/page/{{__prev_page__}}" class="text-gray-500">
-                        Previous
-                        </a>
-                        <a href="#/page/{{__next_page__}}" class="text-gray-500 ml-4">
-                        Next
-                        </a>
-                    </div>
-                </div> 
-            </div>
-        </div>
-        <div class="p-4 text-2xl text-gray-700">
-            {{__news_feed__}}        
-        </div>
-    </div>
-    `
-
-
-    for (let i = (store.currentPage - 1) * 10 ; i < store.currentPage * 10; i++) {
-        // 안에서 fas fa-user의 부분은 font awesome의 부분이다.
-        if (newsFeed[i]) {
-            newsList.push(`
-                <div class="p-6 ${newsFeed[i].read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
-                    <div class="flex">
-                        <div class="flex-auto">
-                            <a href="#/show/${newsFeed[i].id}">${newsFeed[i].title}</a>  
-                        </div>
-                        <div class="text-center text-sm">
-                            <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${newsFeed[i].comments_count}</div>
-                        </div>
-                        </div>
-                        <div class="flex mt-3">
-                        <div class="grid grid-cols-3 text-sm text-gray-500">
-                            <div><i class="fas fa-user mr-1"></i>${newsFeed[i].user}</div>
-                            <div><i class="fas fa-heart mr-1"></i>${newsFeed[i].points}</div>
-                            <div><i class="far fa-clock mr-1"></i>${newsFeed[i].time_ago}</div>
-                        </div>  
-                    </div>
-                </div>    
-                `);
-        }else{
-           break;
-        }
-    }
-
-    // 템플릿으로 교체
-    template = template.replace("{{__news_feed__}}", newsList.join(''));
-    template = template.replace("{{__preview_page__}}", String(store.currentPage > 1 ? store.currentPage - 1 : 1));
-    template = template.replace("{{__next_page__}}", String(newsFeed[store.currentPage * 10] ? store.currentPage + 1 : store.currentPage));
-
-    updateView(template);
-    
 }
 
 function newsDetail() : void {
